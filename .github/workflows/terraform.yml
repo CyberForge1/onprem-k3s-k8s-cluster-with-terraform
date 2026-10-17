@@ -1,20 +1,57 @@
-name: terraform
+name: Deploy k3s cluster
+
 on:
-  workflow_dispatch:
-  pull_request:
   push:
     branches: [main]
+    paths:
+      - "**.tf"
+      - "scripts/**"
+      - "charts/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "What to do"
+        type: choice
+        options: [apply, destroy]
+        default: apply
+
+# Only one run at a time, so two runs never fight over the Terraform state lock
+concurrency:
+  group: terraform
+  cancel-in-progress: false
+
+permissions:
+  id-token: write   # This is required for requesting the JWT from AWS
+  contents: read
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
     env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: us-east-1
+      ACTION: ${{ github.event_name == 'push' && 'apply' || inputs.action }}
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: hashicorp/setup-terraform@v3
-      - run: terraform init -input=false
-      - run: terraform validate
-      - run: terraform plan -input=false
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OID_ARN }}
+          aws-region: us-east-1
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.16.5
+          terraform_wrapper: false
+
+      - name: Terraform init
+        run: terraform init -input=false
+
+      - name: Terraform format and validate
+        run: |
+          terraform fmt -check -recursive
+          terraform validate
+
