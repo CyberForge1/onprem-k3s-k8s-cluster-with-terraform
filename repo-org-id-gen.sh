@@ -4,7 +4,7 @@ read -rsp "Enter your GitHub PAT: " GH_TOKEN
 echo
 export GH_TOKEN
 
-ORG="prinielcloud2026"
+ORG="CyberForge1"
 REPO="onprem-k3s-k8s-cluster-with-terraform"
 
 # Get Organization ID
