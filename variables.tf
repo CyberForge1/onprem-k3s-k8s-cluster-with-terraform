@@ -18,7 +18,7 @@ variable "worker_count" {
 variable "s3_bucket" {
   description = "S3 bucket for the Terraform state, node-token and kubeconfig (same name as in the backend block)"
   type        = string
-  default     = "terraformstate-s3-061166140701"
+  default     = "cyberforge1-k3s-tfstate-2026"
 }
 
 variable "argocd_hostname" {
