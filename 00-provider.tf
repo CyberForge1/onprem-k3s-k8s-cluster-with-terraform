@@ -1,9 +1,9 @@
 terraform {
   # Remote state in S3 (backend blocks cannot use variables, so the bucket is written here)
-  backend "s3" {
-    bucket       = "terraformstate-s3-061166140701"
-    key          = "k3s/terraform.tfstate"
-    region       = "us-east-1"
+backend "s3" {
+    bucket = "cyberforge1-k3s-tfstate-2026"
+    key    = "k3s/terraform.tfstate"
+    region = "us-east-1"
     encrypt      = true
     use_lockfile = true # S3-native state locking, no DynamoDB table needed
   }
